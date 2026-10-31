@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<script
+src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ETP Compliance Monitoring System</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#f3f6fa;color:#26364a}
+header{height:65px;background:#102b46;color:white;display:flex;align-items:center;justify-content:space-between;padding:0 25px}
+header h2{font-size:19px}
+header span{color:#a9c9d7;font-size:12px}
+.layout{display:flex;min-height:calc(100vh - 65px)}
+.sidebar{width:235px;background:#173650;color:white;padding:22px 12px}
+.sidebar h4{color:#91b6c8;padding:10px;font-size:12px}
+.sidebar button{width:100%;text-align:left;background:transparent;border:0;color:#e4edf3;padding:13px;border-radius:7px;cursor:pointer;margin:2px 0}
+.sidebar button:hover,.sidebar button.active{background:#285674}
+main{flex:1;padding:28px;min-width:0}
+.page{display:none}
+.page.active{display:block}
+h1{font-size:25px;margin-bottom:8px}
+.subtitle{color:#718096;margin-bottom:25px;font-size:14px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:25px}
+.card,.panel{background:white;padding:20px;border-radius:10px;box-shadow:0 2px 8px #172b3d10;margin-bottom:18px}
+.card p{color:#718096;font-size:13px}
+.card h2{font-size:27px;margin-top:12px}
+.green{color:#198754}.red{color:#dc3545}.orange{color:#d58a13}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:13px 10px;text-align:left;border-bottom:1px solid #e8edf2}
+th{background:#f4f7fa;color:#536579}
+.badge{padding:5px 9px;border-radius:15px;font-size:11px;font-weight:bold}
+.low{background:#d9f2e4;color:#147a43}
+.medium{background:#fff0c9;color:#946000}
+.high{background:#ffe0e0;color:#b42323}
+button.primary{background:#176b79;color:white;border:0;padding:11px 16px;border-radius:6px;cursor:pointer}
+button.secondary{background:#e8eff4;color:#29465c;border:0;padding:9px 13px;border-radius:6px;cursor:pointer}
+input,select,textarea{width:100%;padding:11px;border:1px solid #d5dee7;border-radius:6px;margin:7px 0 14px}
+label{font-size:13px;font-weight:bold}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.alert{padding:13px;border-left:4px solid #d58a13;background:#fff9e9;margin:10px 0;font-size:13px}
+.bar{height:9px;background:#e8edf2;border-radius:10px;margin:10px 0}
+.bar span{display:block;height:100%;background:#258b80;border-radius:10px}
+nav{display:flex;gap:10px;align-items:center}
+#search{width:200px;margin:0}
+small{color:#718096}
+footer{text-align:center;color:#8794a2;padding:20px;font-size:12px}
+@media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}.sidebar{width:190px}.grid{grid-template-columns:1fr}}
+@media(max-width:600px){
+.layout{display:block}.sidebar{width:100%;display:flex;overflow-x:auto;padding:8px}
+.sidebar h4{display:none}.sidebar button{white-space:nowrap;width:auto}
+main{padding:15px}.cards{grid-template-columns:1fr 1fr}
+header{padding:12px;height:auto;gap:8px}header h2{font-size:14px}
+#search{width:110px}.form-grid{grid-template-columns:1fr}
+table{min-width:550px}.panel{overflow-x:auto}
+}
+/* DASHBOARD DESIGN */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 18px;
+    margin: 20px 0;
+}
+
+.dashboard-card {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    border-left: 5px solid #2563eb;
+}
+
+.dashboard-card h3 {
+    color: #64748b;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.dashboard-card h2 {
+    font-size: 30px;
+    color: #1e293b;
+    margin: 0;
+}
+
+.dashboard-panel {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    margin-top: 20px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+}
+
+.dashboard-panel h3 {
+    color: #1e293b;
+    margin-bottom: 15px;
+}
+
+.dashboard-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.dashboard-actions button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 11px 18px;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.dashboard-actions button:hover {
+    background: #1d4ed8;
+}
+
+.dashboard-status {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #dcfce7;
+    color: #166534;
+    font-weight: bold;
+}
+/* PROFESSIONAL DASHBOARD */
+
+#dashboard {
+    padding: 25px;
+}
+
+#dashboard h1 {
+    color: #16345c;
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+#dashboard .subtitle {
+    color: #64748b;
+    margin-bottom: 25px;
+}
+
+#dashboard .cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin: 25px 0;
+}
+#dashboard .card:nth-child(1) {
+    border-top: 5px solid #2563eb;
+}
+
+#dashboard .card:nth-child(2) {
+    border-top: 5px solid #dc2626;
+}
+
+#dashboard .card:nth-child(3) {
+    border-top: 5px solid #f59e0b;
+}
+
+#dashboard .card:nth-child(4) {
+    border-top: 5px solid #16a34a;
+}
+
+#dashboard .card {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: 0.3s;
+}
+#dashboard .card:hover {
+    transform: translateY(-5px);
+}
+
+#dashboard .card p {
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#dashboard .card h2 {
+    font-size: 32px;
+    color: #16345c;
+    margin-top: 12px;
+}
+
+#dashboard .panel {
+    background: white;
+    padding: 22px;
+    margin: 22px 0;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+}
+
+#dashboard .panel h3 {
+    color: #16345c;
+    margin-bottom: 18px;
+}
+
+#dashboard #dashboardStatus {
+    color: #15803d;
+    font-size: 23px;
+}
+
+#dashboard #dashboardTime {
+    color: #64748b;
+    margin-top: 8px;
+}
+
+#dashboard table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#dashboard th {
+    background: #edf3fb;
+    color: #16345c;
+    padding: 13px;
+    text-align: left;
+}
+
+#dashboard td {
+    padding: 13px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+#dashboard .panel button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    margin: 6px;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+#dashboard .panel button:hover {
+    background: #16345c;
+}
+
+@media (max-width: 800px) {
+    #dashboard .cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    #dashboard .cards {
+        grid-template-columns: 1fr;
+    }
+}
+#dashboard .card-icon {
+    font-size: 30px;
+    margin-bottom: 12px;
+}
+
+#dashboard .card small {
+    display: block;
+    color: #94a3b8;
+    margin-top: 10px;
+    font-size: 12px;
+}
+.system-panel {
+    border-left: 5px solid #16a34a;
+}
+
+.system-online {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    background: #dcfce7;
+    color: #166534;
+    padding: 9px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    margin: 12px 0;
+}
+
+.live-dot {
+    width: 9px;
+    height: 9px;
+    background: #16a34a;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #16a34a;
+}
+
+.system-info {
+    display: flex;
+    gap: 35px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.system-info strong {
+    color: #16345c;
+}
+
+.system-info p {
+    color: #64748b;
+    margin-top: 6px;
+    font-size: 13px;
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div>
+    <h2>ETP GOVERNANCE PORTAL</h2>
+    <span>Environmental Compliance & Monitoring System</span>
+  </div>
+  <nav>
+    <input id="search" placeholder="Search factories..." oninput="renderFactories()">
+    <select id="role" onchange="changeRole()" style="width:145px;margin:0">
+      <option>Admin</option>
+      <option>Inspector</option>
+      <option>Factory User</option>
+      <option>Review Panel</option>
+      <option>Public</option>
+    </select>
+  </nav>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+<h4>MAIN MENU</h4>
+<button class="active" onclick="showPage('dashboard',this)">▦ Dashboard</button>
+<button onclick="showPage('map',this)">🗺 Factory Location Map</button>
+<button onclick="showPage('factories',this)">▣ Factory Registry</button>
+<button onclick="showPage('sensors',this)">◉ Live Sensors</button>
+<button onclick="showPage('anomalies',this)">⚠ Anomaly Detection</button>
+<button onclick="showPage('cases',this)">▤ Case Management</button>
+<button onclick="showPage('inspection',this)">✓ Inspections</button>
+<button onclick="showPage('reports',this)">▥ Reports & Analytics</button>
+<button onclick="showPage('complaints',this)">✉ Public Complaints</button>
+<button onclick="showPage('audit',this)">◷ Audit Log</button>
+</aside>
+
+<main>
+
+<section id="dashboard" class="page active">
+
+<h1>ETP Governance Dashboard</h1>
+<p class="subtitle">Environmental Treatment Plant Monitoring & Compliance System</p>
+
+<div class="cards">
+
+    <div class="card">
+        <div class="card-icon">🏭</div>
+        <p>Total Factories</p>
+        <h2 id="dashFactories">0</h2>
+        <small>Registered factories</small>
+    </div>
+
+    <div class="card">
+        <div class="card-icon">⚠️</div>
+        <p>Total Anomalies</p>
+        <h2 id="dashAnomalies">0</h2>
+        <small>Detected alerts</small>
+    </div>
+
+    <div class="card">
+        <div class="card-icon">📋</div>
+        <p>Open Cases</p>
+        <h2 id="dashCases">0</h2>
+        <small>Cases under review</small>
+    </div>
+
+    <div class="card">
+        <div class="card-icon">📢</div>
+        <p>Public Complaints</p>
+        <h2 id="dashComplaints">0</h2>
+        <small>Citizen reports received</small>
+    </div>
+
+</div>
+<div class="panel system-panel">
+    <h3>🖥️ System Monitoring Status</h3>
+
+    <div class="system-online">
+        <span class="live-dot"></span>
+        SYSTEM ONLINE
+    </div>
+
+    <h2 id="dashboardStatus">Monitoring Active</h2>
+
+    <p id="dashboardTime">Waiting for updates...</p>
+
+    <div class="system-info">
+        <div>
+            <strong>Sensor Network</strong>
+            <p>Monitoring Enabled</p>
+        </div>
+
+        <div>
+            <strong>Data Updates</strong>
+            <p>Every 5 Seconds</p>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <h3>Recent Anomaly Alerts</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Factory</th>
+                <th>Risk Score</th>
+                <th>Alert</th>
+            </tr>
+        </thead>
+        <tbody id="dashboardAlerts"></tbody>
+    </table>
+</div>
+
+<div class="panel">
+    <h3>Quick Navigation</h3>
+    <button onclick="showPage('factories', document.querySelector('[onclick*=factories]'))">Factory Registry</button>
+    <button onclick="showPage('sensors', document.querySelector('[onclick*=sensors]'))">Live Sensors</button>
+    <button onclick="showPage('inspection', document.querySelector('[onclick*=inspection]'))">Inspections</button>
+    <button onclick="showPage('complaints', document.querySelector('[onclick*=complaints]'))">Complaints</button>
+</div>
+
+</section>
+<section id="map" class="page">
+    <h2>Factory Location Map</h2>
+
+    <p>
+        Interactive map showing factory locations
+        and their risk levels.
+    </p>
+
+    <div id="factoryMap"
+         style="height:450px; width:100%; border-radius:10px;">
+    </div>
+</section>
+
+<section id="factories" class="page">
+<h1>Factory Registry</h1>
+<p class="subtitle">Registered industrial units and compliance profiles</p>
+<div class="panel">
+<button class="primary" onclick="document.getElementById('factoryForm').style.display='block'">+ Register Factory</button>
+<div id="factoryForm" style="display:none;margin-top:20px">
+<h3>New Factory Registration</h3><br>
+<form onsubmit="addFactory(event)">
+<label>Factory Name</label><input id="fname" required>
+<div class="form-grid">
+<div><label>District</label><input id="district" required></div>
+<div><label>Industry Type</label><input id="industry" required></div>
+</div>
+<label>ETP Capacity (KLD)</label><input id="capacity" type="number" required>
+<button class="primary">Save Factory</button>
+</form>
+</div>
+</div>
+<div class="panel">
+<table><thead><tr><th>Factory ID</th><th>Name</th><th>District</th><th>Industry</th><th>Status</th></tr></thead>
+<tbody id="factoryRows"></tbody></table>
+</div>
+</section>
+
+<section id="sensors" class="page">
+
+<h1>Live Sensor Monitoring Dashboard</h1>
+<p class="subtitle">Real-time ETP performance and water quality monitoring</p>
+
+<div class="alert">
+    ● Simulated Live Data | Automatic updates every 5 seconds
+</div>
+
+<div class="cards">
+
+<div class="card">
+<p>pH Level</p>
+<h2 id="ph">7.2</h2>
+<span id="phStatus" class="green">Normal</span>
+</div>
+
+<div class="card">
+<p>COD (mg/L)</p>
+<h2 id="cod">120</h2>
+<span id="codStatus" class="green">Normal</span>
+</div>
+
+<div class="card">
+<p>BOD (mg/L)</p>
+<h2 id="bod">25</h2>
+<span id="bodStatus" class="green">Normal</span>
+</div>
+
+<div class="card">
+<p>Flow Rate (KLD)</p>
+<h2 id="flow">450</h2>
+<span id="flowStatus" class="green">Normal</span>
+</div>
+
+</div>
+
+<div class="panel">
+<h3>Sensor System Status</h3><br>
+
+<p>pH Sensor: <span class="green">● Connected</span></p><br>
+<p>COD Sensor: <span class="green">● Connected</span></p><br>
+<p>BOD Sensor: <span class="green">● Connected</span></p><br>
+<p>Flow Sensor: <span class="green">● Connected</span></p><br>
+
+<p><b>Last Updated:</b> <span id="lastUpdated">Waiting...</span></p>
+</div>
+
+<div class="panel">
+<h3>Pollution Alerts</h3><br>
+<div id="sensorAlerts">
+No abnormal readings detected.
+</div>
+</div>
+
+<div class="panel">
+<h3>Sensor Reading History</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Latest Reading</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="sensorTable">
+</tbody>
+</table>
+</div>
+
+</section>
+<section id="anomalies" class="page">
+
+<h1>Anomaly Detection & Risk Assessment</h1>
+<p class="subtitle">Automated identification of suspicious industrial discharge and ETP irregularities</p>
+
+<div class="cards">
+
+<div class="card">
+<p>Total Anomalies</p>
+<h2 id="totalAnomalies">0</h2>
+</div>
+
+<div class="card">
+<p>High Risk</p>
+<h2 id="highAnomalies" class="red">0</h2>
+</div>
+
+<div class="card">
+<p>Medium Risk</p>
+<h2 id="mediumAnomalies" class="orange">0</h2>
+</div>
+
+<div class="card">
+<p>Low Risk</p>
+<h2 id="lowAnomalies" class="green">0</h2>
+</div>
+
+</div>
+
+<div class="panel">
+<h3>Detection Engine</h3>
+<p>Compare reported factory data with sensor readings and identify inconsistencies.</p>
+<br>
+<button class="primary" onclick="detectAnomalies()">Run Detection Engine</button>
+</div>
+
+<div class="panel">
+<h3>Risk Distribution</h3>
+<p id="riskSummary">Run detection to view risk distribution.</p>
+</div>
+
+<div class="panel">
+<h3>Detected Anomalies</h3>
+
+<table>
+<thead>
+<tr>
+<th>Anomaly ID</th>
+<th>Factory</th>
+<th>Category</th>
+<th>Difference</th>
+<th>Risk Score</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody id="anomalyRows"></tbody>
+</table>
+</div>
+
+</section>
+<section id="cases" class="page">
+
+<h1>Case Management Dashboard</h1>
+<p class="subtitle">Investigation, evidence management and regulatory decisions</p>
+
+<div class="cards">
+
+<div class="card">
+<p>Total Cases</p>
+<h2 id="totalCases">0</h2>
+</div>
+
+<div class="card">
+<p>Pending Review</p>
+<h2 id="pendingCases" class="orange">0</h2>
+</div>
+
+<div class="card">
+<p>Under Investigation</p>
+<h2 id="investigatingCases">0</h2>
+</div>
+
+<div class="card">
+<p>Closed Cases</p>
+<h2 id="closedCases" class="green">0</h2>
+</div>
+
+</div>
+
+<div class="panel">
+<h3>Investigation Records</h3>
+<p>Assign cases, record findings, upload evidence details and make decisions.</p>
+<br>
+
+<table>
+<thead>
+<tr>
+<th>Case ID</th>
+<th>Factory</th>
+<th>Risk</th>
+<th>Assign To</th>
+<th>Status</th>
+<th>Investigation</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody id="caseRows"></tbody>
+</table>
+
+</div>
+
+</section>
+<section id="inspection" class="page">
+
+<h1>Field Inspection</h1>
+<p class="subtitle">Record and manage factory inspections</p>
+
+<div class="panel">
+<h3>New Inspection</h3><br>
+
+<form onsubmit="submitInspection(event)">
+
+<label>Factory</label>
+<select id="inspectionFactory" required></select>
+
+<label>Inspection Date</label>
+<input type="date" id="inspectionDate" required>
+
+<label>Inspection Observations</label>
+<textarea id="observation" required rows="4"></textarea>
+
+<label>Inspection Result</label>
+<select id="result">
+<option>Compliant</option>
+<option>Violation Observed</option>
+<option>Further Verification Required</option>
+</select>
+
+<label>Upload Evidence (PDF or Image)</label>
+<input type="file" id="photo" accept=".pdf,image/*">
+
+<button class="primary" type="submit">
+Submit Inspection
+</button>
+
+</form>
+</div>
+
+<div class="panel">
+<h3>Inspection History</h3>
+<div id="inspectionHistory">
+No inspections recorded yet.
+</div>
+</div>
+
+</section>
+
+<section id="reports" class="page">
+
+<h1>Reports & Analytics</h1>
+<p class="subtitle">Environmental performance and compliance overview</p>
+
+<div class="cards">
+
+    <div class="card">
+        <p>Total Factories</p>
+        <h2 id="reportFactories">0</h2>
+    </div>
+
+    <div class="card">
+        <p>Total Anomalies</p>
+        <h2 id="reportAnomalies">0</h2>
+    </div>
+
+    <div class="card">
+        <p>Total Inspections</p>
+        <h2 id="reportInspections">0</h2>
+    </div>
+
+    <div class="card">
+        <p>Total Complaints</p>
+        <h2 id="reportComplaints">0</h2>
+    </div>
+
+</div>
+
+<div class="panel">
+    <h3>Factory Compliance Overview</h3>
+    <canvas id="complianceChart"></canvas>
+</div>
+
+<div class="panel">
+    <h3>Anomaly Risk Distribution</h3>
+    <canvas id="riskChart"></canvas>
+</div>
+
+<div class="panel">
+    <h3>Inspection History</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Factory</th>
+                <th>Date</th>
+                <th>Result</th>
+                <th>Observation</th>
+            </tr>
+        </thead>
+        <tbody id="reportInspectionRows"></tbody>
+    </table>
+</div>
+
+</section>
+
+<section id="complaints" class="page">
+<h1>Citizen Complaint Portal</h1>
+<p class="subtitle">Report suspected environmental violations</p>
+<div class="panel">
+<form onsubmit="submitComplaint(event)">
+<label>Factory</label><select id="complaintFactory"></select>
+<label>Complaint Details</label><textarea id="complaintText" required rows="4"></textarea>
+<label>Incident Date</label><input type="date" id="complaintDate" required>
+<button class="primary">Submit Complaint</button>
+</form>
+</div>
+<div class="panel"><h3>Submitted Complaints</h3><div id="complaintHistory"></div></div>
+</section>
+
+<section id="audit" class="page">
+
+<h1>System Audit Log</h1>
+<p class="subtitle">Track activities and changes performed in the monitoring system.</p>
+
+<div class="cards">
+    <div class="card">
+        <p>Total Activities</p>
+        <h2 id="totalAudit">0</h2>
+    </div>
+</div>
+
+<div class="panel">
+    <h3>Activity History</h3>
+
+    <input type="text" id="auditSearch"
+    placeholder="Search activities..."
+    oninput="renderAudit()">
+
+    <table>
+        <thead>
+            <tr>
+                <th>Activity</th>
+                <th>Date & Time</th>
+            </tr>
+        </thead>
+        <tbody id="auditRows"></tbody>
+    </table>
+</div>
+
+</section>
+<footer>ETP Compliance Monitoring System | Prototype | Simulated Data</footer>
+</main>
+</div>
+
+<script
+src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const initialFactories=[
+{id:"ETP001",name:"Green Chemicals Ltd",district:"Delhi",industry:"Chemical",capacity:500,status:"Compliant",reported:450,sensor:460},
+{id:"ETP002",name:"Metro Textile Works",district:"Noida",industry:"Textile",capacity:300,status:"Under Review",reported:200,sensor:390},
+{id:"ETP003",name:"National Paper Mills",district:"Ghaziabad",industry:"Paper",capacity:600,status:"Compliant",reported:500,sensor:510},
+{id:"ETP004",name:"Eastern Dye Industries",district:"Faridabad",industry:"Dyeing",capacity:400,status:"Under Review",reported:180,sensor:350}
+];
+
+let factories=JSON.parse(localStorage.getItem("factories"))||initialFactories;
+let anomalies=JSON.parse(localStorage.getItem("anomalies"))||[];
+let cases=JSON.parse(localStorage.getItem("cases"))||[];
+let inspections=JSON.parse(localStorage.getItem("inspections"))||[];
+let complaints=JSON.parse(localStorage.getItem("complaints"))||[];
+let audit=JSON.parse(localStorage.getItem("audit"))||[];
+
+function save(){
+localStorage.setItem("factories",JSON.stringify(factories));
+localStorage.setItem("anomalies",JSON.stringify(anomalies));
+localStorage.setItem("cases",JSON.stringify(cases));
+localStorage.setItem("inspections",JSON.stringify(inspections));
+localStorage.setItem("complaints",JSON.stringify(complaints));
+localStorage.setItem("audit",JSON.stringify(audit));
+}
+
+function log(message){
+audit.unshift(new Date().toLocaleString()+" – "+message);
+save();renderAudit();
+}
+
+function showPage(page, button) {
+
+    document.querySelectorAll(".page").forEach(s => {
+        s.classList.remove("active");
+    });
+
+    const selectedPage = document.getElementById(page);
+
+    if (selectedPage) {
+        selectedPage.classList.add("active");
+    }
+
+    document.querySelectorAll(".sidebar button").forEach(b => {
+        b.classList.remove("active");
+    });
+
+    if (button) {
+        button.classList.add("active");
+    }
+
+    if (page === "map") {
+        setTimeout(() => {
+            if (typeof renderFactoryMap === "function") {
+                renderFactoryMap();
+            }
+        }, 300);
+    }
+}
+function changeRole(){
+const role=localStorage.getItem("etpRole") || "Admin";
+document.getElementById("role").value=role;
+
+document.querySelectorAll(".sidebar button").forEach(b=>{
+let name=b.textContent.trim();
+b.style.display="block";
+
+if(role==="Factory User" &&
+!["Dashboard","Live Sensors","Factory Registry"].some(x=>name.includes(x)))
+b.style.display="none";
+
+if(role==="Public" &&
+!["Dashboard","Public Complaints"].some(x=>name.includes(x)))
+b.style.display="none";
+});
+}
+
+function renderFactories(){
+const q=(document.getElementById("search").value||"").toLowerCase();
+document.getElementById("factoryRows").innerHTML=factories.filter(f=>(f.name+f.district+f.id).toLowerCase().includes(q)).map(f=>`
+<tr><td>${f.id}</td><td>${f.name}</td><td>${f.district}</td><td>${f.industry}</td><td>${f.status}</td></tr>`).join("");
+}
+
+function renderSelects(){
+["inspectionFactory","complaintFactory"].forEach(id=>{
+document.getElementById(id).innerHTML=factories.map(f=>`<option value="${f.id}">${f.name}</option>`).join("");
+});
+}
+
+function addFactory(e){
+e.preventDefault();
+factories.push({id:"ETP"+Date.now().toString().slice(-6),name:fname.value,district:district.value,industry:industry.value,capacity:Number(capacity.value),status:"Under Review",reported:0,sensor:0});
+save();log("New factory registered");
+factoryForm.style.display="none";e.target.reset();renderAll();
+}
+
+function detectAnomalies() {
+    anomalies = [];
+
+    function addAnomaly(factory, category, difference, risk) {
+        anomalies.push({
+            id: "AN" + Date.now().toString().slice(-5) +
+                Math.floor(Math.random() * 1000),
+            factory: factory.name,
+            factoryId: factory.id,
+            category: category,
+            difference: difference,
+            risk: Math.min(100, Math.max(0, risk)),
+            status: "Flagged"
+        });
+    }
+
+    factories.forEach(f => {
+
+        // RULE 1: Reported value vs sensor value
+        if (Number.isFinite(f.reported) &&
+            Number.isFinite(f.sensor) &&
+            f.sensor > 0) {
+
+            let diff = Math.abs(f.sensor - f.reported);
+            let percent = diff / f.sensor * 100;
+
+            if (percent > 20) {
+                addAnomaly(f, "Report vs Sensor",
+                    percent.toFixed(1) + "%",
+                    Math.round(percent * 1.2));
+            }
+        }
+
+        // RULE 2: Sensor reading exceeds ETP capacity
+        if (Number.isFinite(f.sensor) &&
+            Number.isFinite(f.capacity) &&
+            f.sensor > f.capacity) {
+            addAnomaly(f, "Sensor vs ETP Capacity",
+                "Above capacity", 70);
+        }
+
+        // RULE 3: Reported value exceeds capacity
+        if (Number.isFinite(f.reported) &&
+            Number.isFinite(f.capacity) &&
+            f.reported > f.capacity) {
+            addAnomaly(f, "Report vs ETP Capacity",
+                "Above capacity", 65);
+        }
+
+        // RULE 4: Negative sensor reading
+        if (Number.isFinite(f.sensor) && f.sensor < 0) {
+            addAnomaly(f, "Invalid Sensor Reading",
+                "Negative value", 60);
+        }
+
+        // RULE 5: Negative reported value
+        if (Number.isFinite(f.reported) && f.reported < 0) {
+            addAnomaly(f, "Invalid Report",
+                "Negative value", 60);
+        }
+
+        // RULE 6: Report is zero but sensor has a reading
+        if (f.reported === 0 && f.sensor > 0) {
+            addAnomaly(f, "Zero Report with Sensor Activity",
+                "Report is zero", 55);
+        }
+
+        // RULE 7: Sensor vs independent laboratory COD
+        if (Number.isFinite(f.sensorCOD) &&
+            Number.isFinite(f.labCOD) &&
+            f.labCOD > 0) {
+
+            let difference =
+                Math.abs(f.sensorCOD - f.labCOD) / f.labCOD * 100;
+
+            if (difference > 20) {
+                addAnomaly(f, "Sensor vs Lab COD",
+                    difference.toFixed(1) + "%",
+                    65);
+            }
+        }
+
+        // RULE 8: Electricity usage consistency
+        if (Number.isFinite(f.electricityKwh) &&
+            Number.isFinite(f.etpRunningHours) &&
+            f.etpRunningHours > 0 &&
+            f.electricityKwh === 0) {
+
+            addAnomaly(f, "ETP Electricity Data",
+                "Zero electricity during reported operation", 60);
+        }
+
+        // RULE 9: Chemical usage data
+        if (Number.isFinite(f.chemicalUsage) &&
+            Number.isFinite(f.productionVolume) &&
+            f.productionVolume > 0 &&
+            f.chemicalUsage === 0) {
+
+            addAnomaly(f, "Chemical Usage Inconsistency",
+                "Zero chemical usage reported", 50);
+        }
+
+        // RULE 10: Wastewater and production records
+        if (Number.isFinite(f.wastewaterVolume) &&
+            Number.isFinite(f.productionVolume) &&
+            f.productionVolume > 0 &&
+            f.wastewaterVolume < 0) {
+
+            addAnomaly(f, "Wastewater Data Inconsistency",
+                "Negative wastewater volume", 60);
+        }
+
+        // RULE 11: Sensor communication status
+        if (f.sensorStatus === "Offline") {
+            addAnomaly(f, "Sensor Communication Failure",
+                "Sensor offline", 40);
+        }
+    });
+
+    // Create cases without duplicating existing cases
+    anomalies.forEach(a => {
+        if (!cases.some(c => c.anomalyId === a.id)) {
+            cases.push({
+                id: "CASE" + a.id,
+                factory: a.factory,
+                anomalyId: a.id,
+                risk: a.risk,
+                status: "Review Pending"
+            });
+        }
+    });
+
+    save();
+    log("11-rule anomaly detection executed");
+    renderAll();
+
+    alert(
+        anomalies.length +
+        " anomaly signals detected. Human verification is required."
+    );
+}
+
+function renderAnomalies() {
+
+    const total = anomalies.length;
+
+    const high = anomalies.filter(a => a.risk >= 60).length;
+    const medium = anomalies.filter(a => a.risk >= 30 && a.risk < 60).length;
+    const low = anomalies.filter(a => a.risk < 30).length;
+
+    document.getElementById("totalAnomalies").textContent = total;
+    document.getElementById("highAnomalies").textContent = high;
+    document.getElementById("mediumAnomalies").textContent = medium;
+    document.getElementById("lowAnomalies").textContent = low;
+
+    document.getElementById("riskSummary").innerHTML =
+        `High Risk: ${high} | Medium Risk: ${medium} | Low Risk: ${low}`;
+
+    document.getElementById("anomalyRows").innerHTML =
+        anomalies.map(a => `
+        <tr>
+            <td>${a.id}</td>
+            <td>${a.factory}</td>
+            <td>${a.category}</td>
+            <td>${a.difference}</td>
+            <td>
+                <span class="badge ${a.risk >= 60 ? 'high' : a.risk >= 30 ? 'medium' : 'low'}">
+                    ${a.risk}/100
+                </span>
+            </td>
+            <td>${a.status}</td>
+        </tr>
+        `).join("") ||
+        "<tr><td colspan='6'>No anomalies detected. Run detection engine.</td></tr>";
+
+    const recentElement = document.getElementById("recent");
+
+if (recentElement) {
+    recentElement.innerHTML =
+        anomalies.slice(0, 5).map(a => `
+        <tr>
+            <td>${a.id}</td>
+            <td>${a.factory}</td>
+            <td>${a.category}</td>
+            <td>${a.risk}</td>
+        </tr>
+        `).join("") ||
+        "<tr><td colspan='4'>No recent anomalies</td></tr>";
+}
+}
+
+
+function renderCases() {
+
+    document.getElementById("totalCases").textContent = cases.length;
+
+    document.getElementById("pendingCases").textContent =
+        cases.filter(c => c.status === "Review Pending").length;
+
+    document.getElementById("investigatingCases").textContent =
+        cases.filter(c => c.status === "Under Investigation").length;
+
+    document.getElementById("closedCases").textContent =
+        cases.filter(c => c.status === "Closed" || c.status === "Dismissed").length;
+
+    document.getElementById("caseRows").innerHTML =
+        cases.map((c, i) => `
+        <tr>
+            <td>${c.id}</td>
+            <td>${c.factory}</td>
+            <td>${c.risk}/100</td>
+
+            <td>
+                <select onchange="updateCaseField(${i}, 'assignedTo', this.value)">
+                    <option value="">Unassigned</option>
+                    ${["Inspector", "Review Panel", "Expert Panel", "Admin"].map(s =>
+                        `<option value="${s}" ${c.assignedTo === s ? "selected" : ""}>${s}</option>`
+                    ).join("")}
+                </select>
+            </td>
+
+            <td>
+                <select onchange="updateCaseField(${i}, 'status', this.value)">
+                    ${["Review Pending", "Under Investigation", "Decision Recorded", "Closed", "Dismissed"].map(s =>
+                        `<option value="${s}" ${c.status === s ? "selected" : ""}>${s}</option>`
+                    ).join("")}
+                </select>
+            </td>
+
+            <td>
+                <button class="secondary" onclick="addCaseFinding(${i})">Finding</button>
+                <button class="secondary" onclick="addEvidence(${i})">Evidence</button>
+            </td>
+
+            <td>
+                <button class="secondary" onclick="recordDecision(${i})">
+                    Record Decision
+                </button>
+            </td>
+        </tr>
+        `).join("") ||
+        "<tr><td colspan='7'>No cases available. Run anomaly detection first.</td></tr>";
+}
+function updateCaseField(i, field, value) {
+    cases[i][field] = value;
+    save();
+    log("Case updated: " + cases[i].id);
+    renderCases();
+}
+
+function addCaseFinding(i) {
+    let finding = prompt("Enter investigation findings:");
+
+    if (!finding || !finding.trim()) return;
+
+    cases[i].finding = finding.trim();
+    save();
+    log("Investigation finding added");
+    alert("Finding saved successfully.");
+    renderCases();
+}
+function renderDashboard() {
+
+    document.getElementById("dashFactories").textContent = factories.length;
+
+    document.getElementById("dashAnomalies").textContent = anomalies.length;
+
+    document.getElementById("dashCases").textContent =
+        cases.filter(c => !["Closed", "Dismissed"].includes(c.status)).length;
+
+    document.getElementById("dashComplaints").textContent = complaints.length;
+
+    document.getElementById("dashboardTime").textContent =
+        "Last updated: " + new Date().toLocaleString();
+
+    document.getElementById("dashboardAlerts").innerHTML =
+        anomalies.slice(0, 5).map(a => `
+        <tr>
+            <td>${a.factory}</td>
+            <td>${a.risk}/100</td>
+            <td>${a.risk >= 70 ? "High Risk" : a.risk >= 40 ? "Medium Risk" : "Low Risk"}</td>
+        </tr>
+        `).join("") ||
+        "<tr><td colspan='3'>No anomaly alerts available</td></tr>";
+}
+
+function addEvidence(i) {
+    let type = prompt("Enter evidence type:");
+
+    if (!type || !type.trim()) return;
+
+    let details = prompt("Enter evidence details:");
+
+    if (!details || !details.trim()) return;
+
+    if (!Array.isArray(cases[i].evidence)) {
+        cases[i].evidence = [];
+    }
+
+    cases[i].evidence.push({
+        type: type.trim(),
+        details: details.trim(),
+        date: new Date().toLocaleString()
+    });
+
+    save();
+    log("Evidence added to case " + cases[i].id);
+    alert("Evidence added successfully!");
+}
+
+function recordDecision(i) {
+    let decision = prompt(
+        "Enter decision: Compliant, Violation or Further Investigation"
+    );
+
+    if (!decision || !decision.trim()) return;
+
+    let reason = prompt("Enter reason for this decision:");
+
+    if (!reason || !reason.trim()) return;
+
+    cases[i].decision = decision.trim();
+    cases[i].decisionReason = reason.trim();
+    cases[i].status = "Decision Recorded";
+
+    save();
+    log("Final decision recorded for " + cases[i].id);
+    alert("Decision saved successfully.");
+
+    renderCases();
+}
+
+function updateCaseField(i, field, value) {
+    cases[i][field] = value;
+    save();
+    log("Case updated: " + cases[i].id);
+    renderCases();
+}
+
+function addCaseFinding(i) {
+    let finding = prompt("Enter investigation findings:");
+    if (!finding || !finding.trim()) return;
+
+    cases[i].finding = finding.trim();
+    save();
+    log("Finding added to " + cases[i].id);
+    alert("Finding saved successfully!");
+    renderCases();
+}
+
+function addEvidence(i) {
+    let type = prompt("Enter evidence type:");
+    if (!type || !type.trim()) return;
+
+    let details = prompt("Enter evidence details:");
+    if (!details || !details.trim()) return;
+
+    if (!Array.isArray(cases[i].evidence)) {
+        cases[i].evidence = [];
+    }
+
+    cases[i].evidence.push({
+        type: type.trim(),
+        details: details.trim(),
+        date: new Date().toLocaleString()
+    });
+
+    save();
+    log("Evidence added to " + cases[i].id);
+    alert("Evidence added successfully!");
+}
+
+function recordDecision(i) {
+    let decision = prompt(
+        "Enter decision: Compliant, Violation or Further Investigation"
+    );
+
+    if (!decision || !decision.trim()) return;
+
+    let reason = prompt("Enter reason for this decision:");
+    if (!reason || !reason.trim()) return;
+
+    cases[i].decision = decision.trim();
+    cases[i].decisionReason = reason.trim();
+    cases[i].status = "Decision Recorded";
+
+    save();
+    log("Decision recorded for " + cases[i].id);
+    alert("Decision saved successfully!");
+    renderCases();
+}
+function submitInspection(e) {
+    e.preventDefault();
+
+    const factory = document.getElementById("inspectionFactory").value;
+    const date = document.getElementById("inspectionDate").value;
+    const observation = document.getElementById("observation").value;
+    const result = document.getElementById("result").value;
+    const file = document.getElementById("photo").files[0];
+
+    inspections.unshift({
+        factory: factory,
+        inspectionDate: date,
+        observation: observation,
+        result: result,
+        date: new Date().toLocaleString(),
+        photo: file ? file.name : "None"
+    });
+
+    save();
+    log("Inspection report submitted");
+
+    e.target.reset();
+    renderAll();
+
+    alert("Inspection submitted successfully!");
+}
+function submitComplaint(e){
+e.preventDefault();
+let ref="CMP"+Date.now().toString().slice(-8);
+complaints.unshift({ref,factory:complaintFactory.value,details:complaintText.value,date:incidentDate.value,status:"Received"});
+save();log("Citizen complaint received: "+ref);e.target.reset();renderAll();alert("Complaint submitted. Reference number: "+ref);
+}
+function setTextSafe(id, value) {
+    const element = document.getElementById(id);
+
+    if (element !== null) {
+        element.textContent = value;
+    }
+}
+function renderAll(){
+renderFactories();
+renderAnomalies();
+renderDashboard();
+renderCases();
+renderSelects();
+renderFactoryMap();
+setTextSafe("total", factories.length);
+
+setTextSafe("compliant",
+    factories.filter(f => f.status === "Compliant").length);
+
+setTextSafe("anomalyCount", anomalies.length);
+
+setTextSafe("highCount",
+    anomalies.filter(a => a.risk >= 60).length);
+
+setTextSafe("inspectionCount", inspections.length);
+
+setTextSafe("caseCount", cases.length);
+
+setTextSafe("complaintCount", complaints.length);
+
+setTextSafe("reportFactories", factories.length);
+document.getElementById("inspectionHistory").innerHTML=inspections.map(i=>`<p>${i.date} | ${i.factory} | ${i.result} | ${i.observation}</p><hr>`).join("")||"No inspections submitted";
+document.getElementById("complaintHistory").innerHTML=complaints.map(c=>`<p><b>${c.ref}</b> | ${c.factory} | ${c.status}</p><hr>`).join("")||"No complaints submitted";
+renderAudit();
+drawCharts();
+}
+let factoryMap = null;
+let factoryMarkers = [];
+
+
+function renderFactoryMap() {
+
+    let mapElement = document.getElementById("factoryMap");
+
+    if (!mapElement || typeof L === "undefined") {
+        return;
+    }
+
+    if (factoryMap === null) {
+
+        factoryMap = L.map("factoryMap").setView(
+            [28.6139, 77.2090], 9
+        );
+
+        L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                attribution: "&copy; OpenStreetMap contributors"
+            }
+        ).addTo(factoryMap);
+    }
+
+    factoryMarkers.forEach(marker => {
+        factoryMap.removeLayer(marker);
+    });
+
+    factoryMarkers = [];
+
+    const locations = {
+        "ETP001": [28.6139, 77.2090],
+        "ETP002": [28.5355, 77.3910],
+        "ETP003": [28.6692, 77.4538],
+        "ETP004": [28.4089, 77.3178]
+    };
+
+    factories.forEach(f => {
+
+        let coordinates = locations[f.id];
+
+        if (!coordinates) return;
+
+        let risk = anomalies
+            .filter(a => a.factoryId === f.id)
+            .reduce((highest, a) => Math.max(highest, a.risk), 0);
+
+        let markerColor =
+            risk >= 60 ? "red" :
+            risk >= 30 ? "orange" : "green";
+
+        let marker = L.circleMarker(coordinates, {
+            radius: 10,
+            color: markerColor,
+            fillColor: markerColor,
+            fillOpacity: 0.8
+        }).addTo(factoryMap);
+
+        marker.bindPopup(
+            "<b>" + f.name + "</b><br>" +
+            "Factory ID: " + f.id + "<br>" +
+            "Risk Score: " + risk + "/100<br>" +
+            "Status: " + f.status
+        );
+
+        factoryMarkers.push(marker);
+    });
+
+    setTimeout(() => factoryMap.invalidateSize(), 200);
+}
+function renderAudit() {
+
+    const search = document.getElementById("auditSearch");
+    const query = search ? search.value.toLowerCase() : "";
+
+    document.getElementById("totalAudit").textContent = audit.length;
+
+    const filtered = audit.filter(item =>
+        String(item.action || item.message || item).toLowerCase().includes(query)
+    );
+
+    document.getElementById("auditRows").innerHTML =
+        filtered.slice().reverse().map(item => `
+        <tr>
+            <td>${item.action || item.message || item}</td>
+            <td>${item.time || item.date || "N/A"}</td>
+        </tr>
+        `).join("") ||
+        "<tr><td colspan='2'>No matching activities found</td></tr>";
+}
+
+function exportCSV(){
+let csv="Factory ID,Name,District,Industry,Status\n"+factories.map(f=>[f.id,f.name,f.district,f.industry,f.status].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(",")).join("\n");
+let a=document.createElement("a");
+a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+a.download="ETP_Factory_Report.csv";a.click();
+URL.revokeObjectURL(a.href);
+}
+
+function updateSensors() {
+
+    let ph = (6.8 + Math.random() * 1.3).toFixed(2);
+    let cod = Math.round(100 + Math.random() * 100);
+    let bod = Math.round(15 + Math.random() * 25);
+    let flow = Math.round(350 + Math.random() * 150);
+
+    document.getElementById("ph").textContent = ph;
+    document.getElementById("cod").textContent = cod;
+    document.getElementById("bod").textContent = bod;
+    document.getElementById("flow").textContent = flow;
+
+    function status(value, min, max) {
+        return value >= min && value <= max ? "Normal" : "Warning";
+    }
+
+    let readings = [
+        ["pH", ph, status(Number(ph), 6.5, 8.5)],
+        ["COD", cod, status(cod, 0, 150)],
+        ["BOD", bod, status(bod, 0, 30)],
+        ["Flow Rate", flow, "Monitoring"]
+    ];
+
+    document.getElementById("phStatus").textContent = readings[0][2];
+    document.getElementById("codStatus").textContent = readings[1][2];
+    document.getElementById("bodStatus").textContent = readings[2][2];
+    document.getElementById("flowStatus").textContent = readings[3][2];
+
+    document.getElementById("sensorTable").innerHTML =
+        readings.map(r => `
+        <tr>
+            <td>${r[0]}</td>
+            <td>${r[1]}</td>
+            <td>${r[2]}</td>
+        </tr>`).join("");
+
+    let warnings = readings.filter(r => r[2] === "Warning");
+
+    document.getElementById("sensorAlerts").innerHTML =
+        warnings.length
+        ? warnings.map(r => `<div class="alert">⚠ ${r[0]} reading requires attention: ${r[1]}</div>`).join("")
+        : "✓ No abnormal readings detected.";
+
+    document.getElementById("lastUpdated").textContent =
+        new Date().toLocaleTimeString();
+}
+
+function drawCharts() {
+
+    document.getElementById("reportFactories").textContent = factories.length;
+    document.getElementById("reportAnomalies").textContent = anomalies.length;
+    document.getElementById("reportInspections").textContent = inspections.length;
+    document.getElementById("reportComplaints").textContent = complaints.length;
+
+    document.getElementById("reportInspectionRows").innerHTML =
+        inspections.map(x => `
+        <tr>
+            <td>${x.factory}</td>
+            <td>${x.date}</td>
+            <td>${x.result}</td>
+            <td>${x.observation}</td>
+        </tr>
+        `).join("") ||
+        "<tr><td colspan='4'>No inspection records available</td></tr>";
+
+    if (typeof Chart === "undefined") return;
+
+    const complianceCanvas = document.getElementById("complianceChart");
+    const riskCanvas = document.getElementById("riskChart");
+
+    if (!complianceCanvas || !riskCanvas) return;
+
+    if (window.complianceChartInstance)
+        window.complianceChartInstance.destroy();
+
+    if (window.riskChartInstance)
+        window.riskChartInstance.destroy();
+
+    window.complianceChartInstance = new Chart(complianceCanvas, {
+        type: "bar",
+        data: {
+            labels: ["Factories", "Inspections", "Complaints"],
+            datasets: [{
+                label: "Total Records",
+                data: [factories.length, inspections.length, complaints.length]
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    window.riskChartInstance = new Chart(riskCanvas, {
+        type: "doughnut",
+        data: {
+            labels: ["High Risk", "Medium Risk", "Low Risk"],
+            datasets: [{
+                data: [
+                    anomalies.filter(a => a.risk >= 70).length,
+                    anomalies.filter(a => a.risk >= 40 && a.risk < 70).length,
+                    anomalies.filter(a => a.risk < 40).length
+                ]
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+}
+        
+setInterval(updateSensors,5000);
+renderAll();
+changeRole();
+</script>
+</body>
+</html>
